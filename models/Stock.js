@@ -18,7 +18,7 @@ const stockSchema = new Schema({
     },
     quantity: {
         type: Number,
-        required: false
+        default: 0,
     },
     description: {
         type: String,

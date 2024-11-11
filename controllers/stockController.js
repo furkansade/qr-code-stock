@@ -3,6 +3,28 @@ const Category = require('../models/Category.js'); // Category modelini import e
 const cloudinary = require('cloudinary').v2;
 const QRCode = require('qrcode');
 
+
+// page render fonksiyonları
+
+exports.stocksPage = async (req, res) => {
+    try {
+        const stocks = await Stock.find().populate('category');
+        const categories = await Category.find();
+
+        res.status(200).render("stocks", {
+            pageTitle: "Stoklar",
+            pageDescription: "Stoklarınızı yönetin!",
+            stocks,
+            categories
+        });
+    } catch (error) {
+        console.error(error);
+        req.flash('error', 'Stoklar getirilirken bir hata oluştu.');
+        res.location(req.get('Referrer') || '/');
+        res.status(500).redirect(req.get('Referrer') || '/');
+    }
+};
+
 exports.getStockById = async (req, res) => {
     const { id } = req.params;
 
@@ -21,13 +43,17 @@ exports.getStockById = async (req, res) => {
     }
 };
 
+// crud fonksiyonları
+
 exports.createStock = async (req, res) => {
 
     const { name, price, quantity, description, category } = req.body;
 
     // Gerekli alanların kontrolü
-    if (!name || !price || !quantity) {
-        return res.status(400).json({ message: "Lütfen gerekli tüm alanları doldurunuz." });
+    if (!name || !category) {
+        req.flash('error', 'Lütfen gerekli alanları doldurunuz.');
+        res.location(req.get('Referrer') || '/');
+        return res.status(400).redirect(req.get('Referrer') || '/');
     }
 
     try {

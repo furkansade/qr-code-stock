@@ -13,6 +13,7 @@ require('./config/cloudinary.js');
 connectToDatabase();
 
 // Routes
+const userRoutes = require('./routes/userRoutes.js');
 const stockRoutes = require('./routes/stockRoutes.js');
 const categoryRoutes = require('./routes/categoryRoutes.js');
 
@@ -47,6 +48,7 @@ app.use((req, res, next) => {
 app.use(fileUpload({ useTempFiles: true })); // En sonlarda olması uygundur
 
 // Routes 
+app.use('/users', userRoutes);
 app.use('/stocks', stockRoutes);
 app.use('/categories', categoryRoutes);
 

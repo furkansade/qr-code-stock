@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<%- include('templates/_header') %>
+
+<body id="page-top">
+
+    <!-- Page Wrapper -->
+    <div id="wrapper">
+
+        <!-- Sidebar -->
+        <%- include('templates/_sidebar') %>
+        <!-- End of Sidebar -->
+
+        <!-- Content Wrapper -->
+        <div id="content-wrapper" class="d-flex flex-column">
+
+            <!-- Main Content -->
+            <div id="content">
+
+                <!-- Topbar -->
+                <%- include('templates/_navbar') %>
+                <!-- End of Topbar -->
+                <!-- Begin Page Content -->
+                <div class="container-fluid">
+
+                    <!-- Page Heading -->
+                   
+                    <%- include('templates/_pageTitle') %>
+
+                    <%- include('templates/_alert') %>
+
+                    <!-- DataTales Example -->
+                    <div class="card shadow mb-4">
+                        <div class="card-header py-3 d-flex justify-content-end">
+                            <div>
+                              <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addUserModal">Kullanıcı Ekle</button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover" id="dataTable" width="100%" cellspacing="0">
+                                    <thead>
+                                        <tr>
+                                            <th>Ad Soyad</th>
+                                            <th>Eposta</th>
+                                            <th>Rol</th>
+                                            <th>İşlemler</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                      <% for (let user of users) { %>
+                                        <tr>
+                                            <td><%= user.firstName && user.lastName ? user.firstName + ' ' + user.lastName : 'İsim Getirilemedi!' %></td>
+                                            <td><%= user.email %></td>                                        
+                                            <td><span class="badge text-bg-<%= user.role === 'employee' ? 'info' : 'warning' %> text-light"><%= user.role === 'employee' ? 'Çalışan' : 'Admin' %></span></td>                                        
+                                            <td>
+                                              <a href="/users/<%= user._id %>?_method=DELETE" 
+                                                class="btn btn-sm btn-danger"
+                                                onclick="return confirm('Bu öğeyi silmek istediğinizden emin misiniz?');">
+                                                 <i class="bi bi-trash"></i>
+                                             </a>
+                                            </td>
+                                        </tr>
+                                      <% } %>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                <!-- /.container-fluid -->
+
+            </div>
+            <!-- End of Main Content -->
+
+                  <!-- ======= Add User Modal ======= -->
+                  <div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-lg">
+                      <div class="modal-content">
+                        <div class="modal-header">
+                          <h5 class="modal-title" id="addUserModalLabel">Yeni Kullanıcı Ekle</h5>
+                          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                          <form class="row g-3" action="/users" method="POST" enctype="multipart/form-data">         
+      
+                            <div class="col-md-5 mb-3">
+                              <label for="firstName" class="form-label">İsim <strong class="text-danger fw-bold">*</strong></label>
+                              <input type="text" class="form-control" id="firstName" name="firstName" required>
+                            </div>
+
+                            <div class="col-md-5 mb-3">
+                              <label for="lastName" class="form-label">Soyisim <strong class="text-danger fw-bold">*</strong></label>
+                              <input type="text" class="form-control" id="lastName" name="lastName" required>
+                            </div>
+
+                            <div class="col-md-2 mb-3">
+                              <label for="role" class="form-label">Rol <strong class="text-danger fw-bold">*</strong></label>
+                              <select class="form-select" id="role" name="role" required>
+                                <option value="employee">Çalışan</option>
+                                <option value="admin">Yönetici</option>
+                              </select>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                              <label for="email" class="form-label">Eposta <strong class="text-danger fw-bold">*</strong></label>
+                              <input type="email" class="form-control" id="email" name="email" required>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label for="password" class="form-label">Şifre <strong class="text-danger fw-bold">*</strong></label>
+                                <div class="input-group">
+                                    <input type="password" class="form-control" id="password" name="password" autocomplete="off" required>
+                                    <button type="button" class="btn btn-outline-secondary" onclick="togglePasswordVisibility()">
+                                        <i class="bi bi-eye" id="passwordToggleIcon"></i>
+                                    </button>
+                                </div>
+                                <button type="button" class="btn btn-secondary mt-2" onclick="generatePassword()">Şifre Oluştur</button>
+                            </div>
+
+    
+                    
+                            <div class="modal-footer">
+                              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+                              <button type="submit" class="btn btn-primary">Ekle</button>
+                            </div>
+                          </form>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- End Add User Modal -->
+
+
+            <!-- Footer -->
+            <%- include('templates/_footer') %>
+            <!-- End of Footer -->
+
+        </div>
+        <!-- End of Content Wrapper -->
+
+    </div>
+    <!-- End of Page Wrapper -->
+
+
+    <%- include('templates/_script') %>
+
+    <script>
+        // Şifreyi göster/gizle işlevi
+        function togglePasswordVisibility() {
+            const passwordInput = document.getElementById("password");
+            const passwordToggleIcon = document.getElementById("passwordToggleIcon");
+    
+            if (passwordInput.type === "password") {
+                passwordInput.type = "text";
+                passwordToggleIcon.classList.replace("bi-eye", "bi-eye-slash");
+            } else {
+                passwordInput.type = "password";
+                passwordToggleIcon.classList.replace("bi-eye-slash", "bi-eye");
+            }
+        }
+    
+        // Rastgele şifre oluşturma işlevi
+        function generatePassword() {
+            const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
+            let password = "";
+            for (let i = 0; i < 8; i++) {
+                const randomIndex = Math.floor(Math.random() * characters.length);
+                password += characters[randomIndex];
+            }
+            document.getElementById("password").value = password;
+        }
+    </script>
+
+</body>
+
+</html>

@@ -181,4 +181,30 @@ exports.updateStock = async (req, res) => {
     }
 };
 
+exports.deleteStock = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const stock = await Stock.findById(id);
+
+        if (!stock) {
+            req.flash('error', 'Stok bulunamadı.');
+            return res.status(404).redirect('/stocks');
+        }
+
+        // Cloudinary'den QR kodu sil
+        await cloudinary.uploader.destroy(stock.qrCodePublicId);
+
+        await Stock.findByIdAndDelete(id);
+
+        req.flash('success', 'Stok başarıyla silindi.');
+        res.status(200).redirect('/stocks');
+
+    } catch (error) {
+        console.error(error);
+        req.flash('error', 'Stok silinirken bir hata oluştu.');
+        res.status(500).redirect('/stocks');
+    }
+};
+
 

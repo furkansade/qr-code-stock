@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= stock.name %> QR Kodu</title>
+    <style>
+        /* Etiket çerçevesi */
+        .label-container {
+            width: 300px;
+            height: 300px;
+            border: 1px solid #333;
+            padding: 10px;
+            text-align: center;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-sizing: border-box;
+        }
+        /* Ürün adı stili */
+        .product-name {
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        /* QR kod */
+        .qr-code {
+            width: 100%;
+            max-width: 250px;
+            height: auto;
+            margin: 0 auto 10px;
+        }
+        /* Yazdırma ayarları */
+        @media print {
+            body {
+                -webkit-print-color-adjust: exact;
+                margin: 0;
+            }
+        }
+    </style>
+</head>
+<body onload="window.print(); window.close();">
+    <div class="label-container">
+        <div class="product-name"><%= stock.name %></div>
+        <img src="<%= stock.qrCodeUrl %>" alt="<%= stock.name %> QR Code" class="qr-code">
+    </div>
+</body>
+</html>

@@ -34,7 +34,10 @@
                     <div class="card shadow mb-4">
                         <div class="card-header py-3 d-flex justify-content-between">
                             <h6 class="m-0 font-weight-bold text-primary">Stoklar Tablosu</h6>
-                            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addStockModal">Stok Ekle</button>
+                            <div>
+                              <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCategoryModal">Kategori Ekle</button>
+                              <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addStockModal">Stok Ekle</button>
+                            </div>
                         </div>
                         <div class="card-body">
                             <div class="table-responsive">
@@ -60,11 +63,13 @@
                                     <tbody>
                                       <% for (let stock of stocks) { %>
                                         <tr>
-                                            <td><%= stock.name %></td>
+                                            <td>
+                                              <a href="/stocks/<%= stock._id %>"><%= stock.name %></a>
+                                            </td>
                                             <td><%= stock.category ? stock.category.name : 'Kategori Yok' %></td>
                                             <td><%= stock.quantity %></td>
                                             <td>
-                                              <a href="<%= stock.qrCodeUrl %>?attachment" download="<%= stock.name %>-QRCode.png" class="cursor-pointer" target="_blank">
+                                              <a href="/stocks/download/<%= stock._id %>">
                                                   <img src="<%= stock.qrCodeUrl %>" alt="<%= stock.name %>" width="50" height="50" class="img-thumbnail">
                                               </a>
                                             </td>                                          
@@ -82,6 +87,84 @@
 
             </div>
             <!-- End of Main Content -->
+
+            <!-- ======= Add Category Modal ======= -->
+            <div class="modal fade" id="addCategoryModal" tabindex="-1" aria-labelledby="addCategoryModalLabel" aria-hidden="true">
+              <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="addCategoryModalLabel">Yeni Kategori Ekle</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body">
+                    <form class="row g-3" action="/categories" method="POST" enctype="multipart/form-data">
+        
+                      <div class="col-md-6 mb-3">
+                        <label for="categoryName" class="form-label">Kategori İsmi <strong class="text-danger fw-bold">*</strong></label>
+                        <input type="text" class="form-control" id="categoryName" name="name" required>
+                      </div>
+
+                      
+                      
+                      <div class="col-md-6 mb-3">
+                        <label for="parentCategory" class="form-label">Üst Kategori</label>
+                        <select name="parentCategory" id="parentCategory" class="form-select">
+                          <option value="">Üst Kategori Yok</option>
+                        <% for(let y = 0; y < categories.length; y++) { %>
+                          <% if(!categories[y].parentCategory) { %>
+                            <option value="<%= categories[y]._id %>">-- <%= categories[y].name %></option>
+                          <% } else { %>
+                            <option value="<%= categories[y]._id %>"><%= categories[y].name %></option>
+                            <% } %>
+                        <% } %>
+                        </select>
+                      </div>
+                     
+                      <button type="submit" class="btn btn-primary">Ekle</button>
+                    </form>
+
+                    <table class="table table-hover mt-3">
+                      <thead>
+                        <tr>
+                          <th scope="col">#</th>
+                          <th scope="col">Kategori</th>
+                          <th scope="col">Üst Kategori</th>
+                          <th scope="col">İşlem</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+            
+                        <% for(let j = 0; j < categories.length; j++) { %>
+            
+                        <tr class="<%= categories[j].parentCategory ? 'table-light' : '' %>">
+                          <th scope="row"><%= j+1 %></th>
+                          <td class="<%= categories[j].parentCategory ? '' : 'fw-bold' %>"><%= categories[j].name %></td>
+                          <% if(categories[j].parentCategory){ %>
+                            <td><%= categories[j].parentCategory.name %></td>
+                          <% } else { %>
+                              <td>-</td>
+                          <% } %>
+                          <td>
+                            <a href="/categories/<%= categories[j]._id %>?_method=DELETE" class="btn btn-sm btn-danger">
+                              <i class="bi bi-trash"></i>
+                            </a>
+                          </td>
+                        </tr>
+            
+                        <% } %>
+            
+            
+                      </tbody>
+                    </table>
+              
+                      <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+                      </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- End Add Category Modal -->
 
             <!-- ======= Add Stock Modal ======= -->
             <div class="modal fade" id="addStockModal" tabindex="-1" aria-labelledby="addStockModalLabel" aria-hidden="true">
@@ -115,7 +198,7 @@
 
                       <div class="col-md-12 mb-3">
                         <label for="stockPrice" class="form-label">Birim Fiyat</label>
-                        <input type="number" class="form-control" id="stockPrice" name="price">
+                        <input type="number" class="form-control" id="stockPrice" step="0.1" name="price">
                       </div>
         
                       <div class="col-md-12 mb-3">

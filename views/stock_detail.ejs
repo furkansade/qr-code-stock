@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<%- include('templates/_header') %>
+
+<body id="page-top">
+
+    <!-- Page Wrapper -->
+    <div id="wrapper">
+
+        <!-- Sidebar -->
+        <%- include('templates/_sidebar') %>
+        <!-- End of Sidebar -->
+
+        <!-- Content Wrapper -->
+        <div id="content-wrapper" class="d-flex flex-column">
+
+            <!-- Main Content -->
+            <div id="content">
+
+                <!-- Topbar -->
+                <%- include('templates/_navbar') %>
+                <!-- End of Topbar -->
+                <!-- Begin Page Content -->
+                <div class="container-fluid">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="/stocks">Stoklar</a></li>
+                            <li class="breadcrumb-item active" aria-current="page"><%= stock.name %></li>
+                        </ol>
+                      </nav>
+                      <hr>
+
+                    <!-- Page Heading -->
+                   
+                    <div class="d-flex justify-content-between mb-3">
+                        <%- include('templates/_pageTitle') %>
+                        <div>
+                            <a href="/stocks/print/<%= stock._id %>" class="btn btn-primary">
+                                <i class="bi bi-printer"></i>
+                            </a>
+                            <a href="/stocks/download/<%= stock._id %>" class="btn btn-secondary">
+                                <i class="bi bi-qr-code-scan"></i>
+                            </a>
+                        </div>
+                    </div>
+
+                    <%- include('templates/_alert') %>
+
+                    <form class="row g-3" action="/stocks/<%= stock._id %>?_method=PUT" method="POST" enctype="multipart/form-data">
+                        <div class="col-md-8 mb-3">
+                            <label for="stockName" class="form-label">Ürün <strong class="text-danger fw-bold">*</strong></label>
+                            <input type="text" class="form-control" id="stockName" name="name" value="<%= stock.name %>" readonly required>
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <label for="stockCategory" class="form-label">Kategori <strong class="text-danger fw-bold">*</strong></label>
+                            <select name="category" id="stockCategory" class="form-select">
+                                <% for (let category of categories) { %>
+                                    <option value="<%= category._id %>" <%= category._id.toString() === stock.category._id.toString() ? 'selected' : '' %>><%= category.name %></option>
+                                <% } %>
+                            </select>
+                        </div>
+                    
+                        <div class="col-md-6 mb-3">
+                            <label for="quantity" class="form-label">Adet</label>
+                            <div class="input-group">
+                                <button type="button" class="btn btn-outline-secondary" onclick="adjustQuantity(-100)">-100</button>
+                                <input type="number" class="form-control" id="quantity" name="quantity" value="<%= stock.quantity %>">
+                                <button type="button" class="btn btn-outline-secondary" onclick="adjustQuantity(100)">+100</button>
+                            </div>
+                        </div>
+                    
+                        <div class="col-md-6 mb-3">
+                            <label for="stockPrice" class="form-label">Birim Fiyat</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" id="stockPrice" name="price" step="0.1" value="<%= stock.price %>" readonly>
+                                <span class="input-group-text" id="basic-addon2">₺</span>
+                            </div>
+                        </div>
+                    
+                        <div class="col-md-12 mb-3">
+                            <label for="stockDescription" class="form-label">Stok Açıklaması</label>
+                            <textarea class="form-control" rows="2" id="stockDescription" name="description" readonly><%= stock.description %></textarea>
+                        </div>
+                    
+                        <div class="col-md-6">
+                            <button type="button" class="btn btn-secondary" onclick="toggleFields(this)">Alanları Aç</button>
+                            <button type="submit" class="btn btn-warning">Güncelle</button>
+                        </div>
+                    </form>
+
+                </div>
+                <!-- /.container-fluid -->
+
+            </div>
+            <!-- End of Main Content -->
+
+            <!-- ======= Add Stock Modal ======= -->
+            <div class="modal fade" id="addStockModal" tabindex="-1" aria-labelledby="addStockModalLabel" aria-hidden="true">
+              <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="addStockModalLabel">Stok Ekle</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body">
+                    <form class="row g-3" action="/stocks" method="POST" enctype="multipart/form-data">
+        
+                      <div class="col-md-12 mb-3">
+                        <label for="stockName" class="form-label">Ürün <strong class="text-danger fw-bold">*</strong></label>
+                        <input type="text" class="form-control" id="stockName" name="name" required>
+                      </div>
+                      
+                      <div class="col-md-6 mb-3">
+                        <label for="stockCategory" class="form-label">Kategori <strong class="text-danger fw-bold">*</strong></label>
+                        <select name="category" id="stockCategory" class="form-select">
+                          <% for (let category of categories) { %>
+                            <option value="<%= category._id %>"><%= category.name %></option>
+                          <% } %>
+                        </select>
+                      </div>
+
+                      <div class="col-md-6 mb-3">
+                        <label for="quantity" class="form-label">Adet</label>
+                        <input type="number" class="form-control" id="quantity" name="quantity">
+                      </div>
+
+                      <div class="col-md-12 mb-3">
+                        <label for="stockPrice" class="form-label">Birim Fiyat</label>
+                        <input type="number" class="form-control" id="stockPrice" name="price">
+                      </div>
+        
+                      <div class="col-md-12 mb-3">
+                        <label for="stockDescription" class="form-label">Stok Açıklaması</label>
+                        <textarea class="form-control" rows="2" id="stockDescription" name="description"></textarea>
+                      </div>
+              
+                      <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+                        <button type="submit" class="btn btn-primary">Ekle</button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- End Add Stock Modal -->
+
+            <!-- Footer -->
+            <%- include('templates/_footer') %>
+            <!-- End of Footer -->
+
+        </div>
+        <!-- End of Content Wrapper -->
+
+    </div>
+    <!-- End of Page Wrapper -->
+
+
+    <%- include('templates/_script') %>
+
+    <script>
+        let fieldsEnabled = false;
+    
+        function toggleFields(button) {
+            const fields = ['stockName', 'stockPrice', 'stockDescription'];
+            fields.forEach(id => {
+                document.getElementById(id).readOnly = fieldsEnabled;
+            });
+    
+            button.textContent = fieldsEnabled ? "Alanları Aç" : "Alanları Kapat";
+            fieldsEnabled = !fieldsEnabled;
+        }
+    
+        function adjustQuantity(amount) {
+            const quantityInput = document.getElementById("quantity");
+            let currentValue = parseInt(quantityInput.value) || 0;
+            currentValue += amount;
+            if (currentValue < 0) currentValue = 0;
+            quantityInput.value = currentValue;
+        }
+    </script>
+
+</body>
+
+</html>

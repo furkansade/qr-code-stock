@@ -2,6 +2,7 @@ const Stock = require('../models/Stock.js'); // Stock modelini import ediyoruz
 const Category = require('../models/Category.js'); // Category modelini import ediyoruz
 const cloudinary = require('cloudinary').v2;
 const QRCode = require('qrcode');
+const axios = require('axios');
 
 
 // page render fonksiyonları
@@ -9,11 +10,11 @@ const QRCode = require('qrcode');
 exports.stocksPage = async (req, res) => {
     try {
         const stocks = await Stock.find().populate('category');
-        const categories = await Category.find();
+        const categories = await Category.find().populate('parentCategory');
 
         res.status(200).render("stocks", {
             pageTitle: "Stoklar",
-            pageDescription: "Stoklarınızı yönetin!",
+            sidebarTitle: "stocks",
             stocks,
             categories
         });
@@ -30,18 +31,66 @@ exports.getStockById = async (req, res) => {
 
     try {
         const stock = await Stock.findById(id).populate('category');
+        const categories = await Category.find().populate('parentCategory');
 
         if (!stock) {
             return res.status(404).json({ message: "Stok bulunamadı." });
         }
 
-        res.status(200).render("/stockDetail", {
-             stock
+        res.status(200).render("stock_detail", {
+            pageTitle: stock.name,
+            sidebarTitle: "stock_detail",
+            stock,
+            categories
         });
     } catch (error) {
         res.status(500).json({ message: "Stok getirilirken bir hata oluştu.", error: error.message });
     }
 };
+
+// download QR code
+
+exports.downloadQRCode = async (req, res) => {
+    const { id } = req.params;
+    try {
+        const stock = await Stock.findById(id);
+        if (!stock) {
+            req.flash('error', 'Stok bulunamadı.');
+            return res.status(404).redirect('/stocks');
+        }
+
+        const response = await axios.get(stock.qrCodeUrl, {
+            responseType: 'arraybuffer'
+        });
+
+        res.setHeader('Content-Disposition', `attachment; filename="${stock.name}-QRCode.png"`);
+        res.setHeader('Content-Type', 'image/png');
+        res.send(response.data);
+    } catch (error) {
+        console.error(error);
+        req.flash('error', 'QR kod indirilirken bir hata oluştu.');
+        res.status(500).redirect('/stocks');
+    }
+};
+
+exports.printQrCode = async (req, res) => {
+    const { id } = req.params;
+    try {
+        const stock = await Stock.findById(id).select('name qrCodeUrl');
+        if (!stock) {
+            req.flash('error', 'Stok bulunamadı.');
+            return res.status(404).redirect('/stocks');
+        }
+
+        // QR kod sayfasını render edin
+        res.render('printQRCode', { stock });
+    } catch (error) {
+        console.error(error);
+        req.flash('error', 'QR kod yazdırılırken bir hata oluştu.');
+        res.status(500).redirect('/stocks');
+    }
+};
+
 
 // crud fonksiyonları
 
@@ -93,6 +142,41 @@ exports.createStock = async (req, res) => {
 
     } catch (error) {
         req.flash('error', 'Stok oluşturulurken bir hata oluştu.');
+        res.status(500).redirect('/stocks');
+    }
+};
+
+exports.updateStock = async (req, res) => {
+    const { id } = req.params;
+    const { name, price, quantity, description, category } = req.body;
+
+    if (!name || !category) {
+        req.flash('error', 'Lütfen gerekli alanları doldurunuz.');
+        res.location(req.get('Referrer') || '/');
+        return res.status(400).redirect(req.get('Referrer') || '/');
+    }
+
+    try {
+        const stock = await Stock.findById(id);
+
+        if (!stock) {
+            req.flash('error', 'Stok bulunamadı.');
+            return res.status(404).redirect('/stocks');
+        }
+
+        stock.name = name;
+        stock.price = price;
+        stock.quantity = quantity;
+        stock.description = description;
+        stock.category = category;
+
+        await stock.save();
+
+        req.flash('success', 'Stok başarıyla güncellendi.');
+        res.status(200).redirect(`/stocks/${id}`);
+
+    } catch (error) {
+        req.flash('error', 'Stok güncellenirken bir hata oluştu.');
         res.status(500).redirect('/stocks');
     }
 };

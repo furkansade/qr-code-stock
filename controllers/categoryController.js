@@ -16,9 +16,9 @@ exports.createCategory = async (req, res) => {
         await newCategory.save();
 
         req.flash('success', 'Kategori başarıyla oluşturuldu.');
-        res.status(201).redirect('/categories');
+        res.status(201).redirect('/stocks');
     } catch (error) {
         req.flash('error', 'Kategori oluşturulurken bir hata oluştu.');
-        res.status(500).redirect('/categories');
+        res.status(500).redirect('/stocks');
     }
 };

@@ -14,6 +14,7 @@ connectToDatabase();
 
 // Routes
 const userRoutes = require('./routes/userRoutes.js');
+const authRoutes = require('./routes/authRoutes.js');
 const stockRoutes = require('./routes/stockRoutes.js');
 const categoryRoutes = require('./routes/categoryRoutes.js');
 
@@ -44,13 +45,23 @@ app.use((req, res, next) => {
     next();
 });
 
+// Kullanıcı bilgisini tüm sayfalarda erişilebilir hale getirmek için checkUser middleware'i ekleniyor
+const { checkUser } = require('./middlewares/checkUser.js');
+app.use(checkUser);
+
 // File Upload middleware
 app.use(fileUpload({ useTempFiles: true })); // En sonlarda olması uygundur
 
 // Routes 
 app.use('/users', userRoutes);
+app.use('/auth', authRoutes);
 app.use('/stocks', stockRoutes);
 app.use('/categories', categoryRoutes);
+
+// route olmayan yollarda 404 hatası ver ve /auth/login sayfasına yönlendir
+app.get('*', (req, res) => {
+    res.status(404).redirect('/auth');
+});
 
 const PORT = process.env.PORT || 3000;
 

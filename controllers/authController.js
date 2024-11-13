@@ -46,6 +46,9 @@ exports.loginUser = async (req, res) => {
             maxAge: 24 * 60 * 60 * 1000 // 1 gün
         })
 
+        // tokenı yazdır
+        console.log(token);
+
         req.flash('success', 'Giriş başarılı!');
         res.status(200).redirect('/stocks');
     } catch (error) {

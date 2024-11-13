@@ -1,11 +1,12 @@
 const express = require('express');
 const stockController = require('../controllers/stockController.js');
-const { requireAuth, requireAdmin } = require('../middlewares/checkUser.js');
+const { requireAdmin } = require('../middlewares/checkUser.js');
+const authMiddleware = require('../middlewares/authMiddleware.js');
 
 const router = express.Router();
 
 // Tüm rotalar için giriş yapma zorunluluğu
-router.use(requireAuth);
+router.use(authMiddleware.authenticateToken);
 
 // Tüm kullanıcılar erişebilir
 router.get('/', stockController.stocksPage);

@@ -15,8 +15,8 @@ router.get('/download/:id', stockController.downloadQRCode);
 router.get('/print/:id', stockController.printQrCode);
 
 // Sadece admin kullanıcılar erişebilir
-router.post('/', requireAdmin, stockController.createStock);
-router.put('/:id', requireAdmin, stockController.updateStock);
-router.delete('/:id', requireAdmin, stockController.deleteStock);
+router.post('/', stockController.createStock);
+router.put('/:id', stockController.updateStock);
+router.delete('/:id', stockController.deleteStock);
 
 module.exports = router;
